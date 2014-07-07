@@ -13,11 +13,11 @@ Gem version of bootstrapvalidator JavaScript library = a jQuery based field vali
 
 **Add into your application.js**
 
-`//= require bootstrapValidator`
+`//= require bootstrapValidator.min`
 
 **Add into your application.css**
 
-`*= require bootstrapValidator`
+`*= require bootstrapValidator.min`
 
 **In your Rails directory run**
 
