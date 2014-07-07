@@ -11,7 +11,7 @@ Gem::Specification.new do |gem|
   gem.name          = "bootstrap-validator-rails"
   gem.require_paths = ["lib"]
   gem.files         = `git ls-files`.split("\n")
-  gem.version       = BootstrapValidator::Rails::VERSION
+  gem.version       = BootstrapValidatorRails::Rails::VERSION
   gem.platform      = Gem::Platform::RUBY
 
   gem.add_dependency "jquery-rails", ">= 3.0"
