@@ -428,6 +428,10 @@
                 eventType = isValid ? 'success.form.bv' : 'error.form.bv',
                 e         = $.Event(eventType);
 
+            if (isValid && this.$form.data('remote') && $.rails !== undefined) {
+                return;
+            }
+
             this.$form.trigger(e);
 
             // Call default handler
