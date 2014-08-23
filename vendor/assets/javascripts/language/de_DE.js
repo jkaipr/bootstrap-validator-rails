@@ -184,6 +184,9 @@
         imei: {
             'default': 'Bitte gültige IMEI Nummer eingeben'
         },
+        imo: {
+            'default': 'Bitte gültige IMO Nummer eingeben'
+        },
         integer: {
             'default': 'Bitte Zahl eingeben'
         },
@@ -211,6 +214,9 @@
         mac: {
             'default': 'Bitte gültige MAC Adresse eingeben'
         },
+        meid: {
+            'default': 'Bitte gültige MEID Nummer eingeben'
+        },
         notEmpty: {
             'default': 'Bitte Wert eingeben'
         },
@@ -222,8 +228,13 @@
             countryNotSupported: 'Der Ländercode %s wird nicht unterstützt',
             country: 'Bitte valide Telefonnummer für %s eingeben',
             countries: {
-                GB: 'United Kingdom',
-                US: 'USA'
+                BR: 'Brasilien',
+                ES: 'Spanien',
+                FR: 'Frankreich',
+                GB: 'Vereinigtes Königreich',
+                MA: 'Marokko',
+                PK: 'Pakistan',
+                US: 'Vereinigte Staaten'
             }
         },
         regexp: {
@@ -272,6 +283,7 @@
                 AT: 'Österreich',
                 BE: 'Belgisch',
                 BG: 'Bulgarisch',
+                BR: 'Brasilianisch',
                 CH: 'Schweiz',
                 CY: 'Zypriotisch',
                 CZ: 'Tschechisch',
@@ -287,6 +299,7 @@
                 HU: 'Ungarisch',
                 HR: 'Kroatisch',
                 IE: 'Irisch',
+                IS: 'Island',
                 IT: 'Italienisch',
                 LT: 'Lithauisch',
                 LU: 'Luxemburgerisch',
@@ -301,7 +314,8 @@
                 RS: 'Serbisch',
                 SE: 'Schwedisch',
                 SI: 'Slowenisch',
-                SK: 'Slowakisch'
+                SK: 'Slowakisch',
+                ZA: 'Süd Afrikanisch'
             }
         },
         vin: {
@@ -312,14 +326,16 @@
             countryNotSupported: 'Der Ländercode %s wird nicht unterstützt',
             country: 'Bitte gültigen Code %s eingeben',
             countries: {
-                'CA': 'Kanadische Postleitzahl',
-                'DK': 'Dänische Postleitzahl',
-                'GB': 'Englische Postleitzahl',
-                'IT': 'Italienische Postleitzahl',
-                'NL': 'Niederländische Postleitzahl',
-                'SE': 'Schweizerische Postleitzahl',
-                'SG': 'Singapurische Postleitzahl',
-                'US': 'Vereinigte Staaten Postleitzahl'
+                BR: 'Brasilianisch Postleitzahl',
+                CA: 'Kanadische Postleitzahl',
+                DK: 'Dänische Postleitzahl',
+                GB: 'Englische Postleitzahl',
+                IT: 'Italienische Postleitzahl',
+                MA: 'Marokkanisch Postleitzahl',
+                NL: 'Niederländische Postleitzahl',
+                SE: 'Schweizerische Postleitzahl',
+                SG: 'Singapurische Postleitzahl',
+                US: 'Vereinigte Staaten Postleitzahl'
             }
         }
     });

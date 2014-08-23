@@ -2,7 +2,7 @@
  * BootstrapValidator (http://bootstrapvalidator.com)
  * The best jQuery plugin to validate form fields. Designed to use with Bootstrap 3
  *
- * @version     v0.5.0, built on 2014-07-14 4:31:02 PM
+ * @version     v0.5.1, built on 2014-08-22 4:55:09 PM
  * @author      https://twitter.com/nghuuphuoc
  * @copyright   (c) 2013 - 2014 Nguyen Huu Phuoc
  * @license     MIT
@@ -14,6 +14,7 @@
 
         this.$invalidFields = $([]);    // Array of invalid fields
         this.$submitButton  = null;     // The submit button which is clicked to submit form
+        this.$hiddenButton  = null;
 
         // Validating status
         this.STATUS_NOT_VALIDATED = 'NOT_VALIDATED';
@@ -68,6 +69,19 @@
                         valid:      this.$form.attr('data-bv-feedbackicons-valid'),
                         invalid:    this.$form.attr('data-bv-feedbackicons-invalid'),
                         validating: this.$form.attr('data-bv-feedbackicons-validating')
+                    },
+                    events: {
+                        formInit:         this.$form.attr('data-bv-events-form-init'),
+                        formError:        this.$form.attr('data-bv-events-form-error'),
+                        formSuccess:      this.$form.attr('data-bv-events-form-success'),
+                        fieldAdded:       this.$form.attr('data-bv-events-field-added'),
+                        fieldRemoved:     this.$form.attr('data-bv-events-field-removed'),
+                        fieldInit:        this.$form.attr('data-bv-events-field-init'),
+                        fieldError:       this.$form.attr('data-bv-events-field-error'),
+                        fieldSuccess:     this.$form.attr('data-bv-events-field-success'),
+                        fieldStatus:      this.$form.attr('data-bv-events-field-status'),
+                        validatorError:   this.$form.attr('data-bv-events-validator-error'),
+                        validatorSuccess: this.$form.attr('data-bv-events-validator-success')
                     }
                 };
 
@@ -98,23 +112,43 @@
                     });
 
             this.options = $.extend(true, this.options, options);
+
+            // When pressing Enter on any field in the form, the first submit button will do its job.
+            // The form then will be submitted.
+            // I create a first hidden submit button
+            this.$hiddenButton = $('<button/>')
+                                    .attr('type', 'submit')
+                                    .prependTo(this.$form)
+                                    .addClass('bv-hidden-submit')
+                                    .css({ display: 'none', width: 0, height: 0 });
+
+            this.$form
+                .on('click.bv', '[type="submit"]', function(e) {
+                    // Don't perform validation when clicking on the submit button/input
+                    // which aren't defined by the 'submitButtons' option
+                    var $button = $(e.target).eq(0);
+                    if (that.options.submitButtons && !$button.is(that.options.submitButtons) && !$button.is(that.$hiddenButton)) {
+                        that.$form.off('submit.bv').submit();
+                    }
+                });
+
             for (var field in this.options.fields) {
                 this._initField(field);
             }
 
-            this.$form.trigger($.Event('init.form.bv'), {
+            this.$form.trigger($.Event(this.options.events.formInit), {
                 bv: this,
                 options: this.options
             });
 
             // Prepare the events
             if (this.options.onSuccess) {
-                this.$form.on('success.form.bv', function(e) {
+                this.$form.on(this.options.events.formSuccess, function(e) {
                     $.fn.bootstrapValidator.helpers.call(that.options.onSuccess, [e]);
                 });
             }
             if (this.options.onError) {
-                this.$form.on('error.form.bv', function(e) {
+                this.$form.on(this.options.events.formError, function(e) {
                     $.fn.bootstrapValidator.helpers.call(that.options.onError, [e]);
                 });
             }
@@ -277,12 +311,12 @@
 
                     // Prepare the validator events
                     if (this.options.fields[field].validators[validatorName].onSuccess) {
-                        $field.on('success.validator.bv', function(e, data) {
+                        $field.on(this.options.events.validatorSuccess, function(e, data) {
                              $.fn.bootstrapValidator.helpers.call(that.options.fields[field].validators[validatorName].onSuccess, [e, data]);
                         });
                     }
                     if (this.options.fields[field].validators[validatorName].onError) {
-                        $field.on('error.validator.bv', function(e, data) {
+                        $field.on(this.options.events.validatorError, function(e, data) {
                              $.fn.bootstrapValidator.helpers.call(that.options.fields[field].validators[validatorName].onError, [e, data]);
                         });
                     }
@@ -300,9 +334,18 @@
                                     .css('display', 'none')
                                     .addClass('form-control-feedback')
                                     .attr('data-bv-icon-for', field)
-                                    // Place it after the label containing the checkbox/radio
-                                    // so when clicking the icon, it doesn't effect to the checkbox/radio element
-                                    .insertAfter(('checkbox' === type || 'radio' === type) ? $field.parent() : $field);
+                                    .insertAfter($field);
+
+                    // Place it after the container of checkbox/radio
+                    // so when clicking the icon, it doesn't effect to the checkbox/radio element
+                    if ('checkbox' === type || 'radio' === type) {
+                        var $fieldParent = $field.parent();
+                        if ($fieldParent.hasClass(type)) {
+                            $icon.insertAfter($fieldParent);
+                        } else if ($fieldParent.parent().hasClass(type)) {
+                            $icon.insertAfter($fieldParent.parent());
+                        }
+                    }
 
                     // The feedback icon does not render correctly if there is no label
                     // https://github.com/twbs/bootstrap/issues/12873
@@ -321,17 +364,17 @@
 
             // Prepare the events
             if (this.options.fields[field].onSuccess) {
-                fields.on('success.field.bv', function(e, data) {
+                fields.on(this.options.events.fieldSuccess, function(e, data) {
                     $.fn.bootstrapValidator.helpers.call(that.options.fields[field].onSuccess, [e, data]);
                 });
             }
             if (this.options.fields[field].onError) {
-                fields.on('error.field.bv', function(e, data) {
+                fields.on(this.options.events.fieldError, function(e, data) {
                     $.fn.bootstrapValidator.helpers.call(that.options.fields[field].onError, [e, data]);
                 });
             }
             if (this.options.fields[field].onStatus) {
-                fields.on('status.field.bv', function(e, data) {
+                fields.on(this.options.events.fieldStatus, function(e, data) {
                     $.fn.bootstrapValidator.helpers.call(that.options.fields[field].onStatus, [e, data]);
                 });
             }
@@ -357,7 +400,7 @@
                     break;
             }
 
-            fields.trigger($.Event('init.field.bv'), {
+            fields.trigger($.Event(this.options.events.fieldInit), {
                 bv: this,
                 field: field,
                 element: fields
@@ -425,7 +468,7 @@
          */
         _submit: function() {
             var isValid   = this.isValid(),
-                eventType = isValid ? 'success.form.bv' : 'error.form.bv',
+                eventType = isValid ? this.options.events.formSuccess : this.options.events.formError,
                 e         = $.Event(eventType);
 
             this.$form.trigger(e);
@@ -588,10 +631,10 @@
             if (validatorName) {
                 switch ($field.data('bv.result.' + validatorName)) {
                     case this.STATUS_INVALID:
-                        $field.trigger($.Event('error.validator.bv'), data);
+                        $field.trigger($.Event(this.options.events.validatorError), data);
                         break;
                     case this.STATUS_VALID:
-                        $field.trigger($.Event('success.validator.bv'), data);
+                        $field.trigger($.Event(this.options.events.validatorSuccess), data);
                         break;
                     default:
                         break;
@@ -619,14 +662,14 @@
                 // Remove from the list of invalid fields
                 this.$invalidFields = this.$invalidFields.not($field);
 
-                $field.trigger($.Event('success.field.bv'), data);
+                $field.trigger($.Event(this.options.events.fieldSuccess), data);
             }
             // If all validators are completed and there is at least one validator which doesn't pass
             else if (counter[this.STATUS_NOT_VALIDATED] === 0 && counter[this.STATUS_VALIDATING] === 0 && counter[this.STATUS_INVALID] > 0) {
                 // Add to the list of invalid fields
                 this.$invalidFields = this.$invalidFields.add($field);
 
-                $field.trigger($.Event('error.field.bv'), data);
+                $field.trigger($.Event(this.options.events.fieldError), data);
             }
         },
 
@@ -956,7 +999,7 @@
                 }
 
                 // Trigger an event
-                $field.trigger($.Event('status.field.bv'), {
+                $field.trigger($.Event(this.options.events.fieldStatus), {
                     bv: this,
                     field: field,
                     element: $field,
@@ -1258,7 +1301,7 @@
 
             this.disableSubmitButtons(false);
             // Trigger an event
-            this.$form.trigger($.Event('added.field.bv'), {
+            this.$form.trigger($.Event(this.options.events.fieldAdded), {
                 field: field,
                 element: fields,
                 options: this.options.fields[field]
@@ -1314,7 +1357,7 @@
 
             this.disableSubmitButtons(false);
             // Trigger an event
-            this.$form.trigger($.Event('removed.field.bv'), {
+            this.$form.trigger($.Event(this.options.events.fieldRemoved), {
                 field: field,
                 element: fields
             });
@@ -1464,7 +1507,7 @@
                 }
                 // ... return value of callback
                 else {
-                    return $.fn.bootstrapValidator.helpers.call(option, [value, this, $field]);
+                    return $.fn.bootstrapValidator.helpers.call(option, [value, this, $field]) || option;
                 }
             }
 
@@ -1522,15 +1565,16 @@
                 }
             }
 
-            // Enable submit buttons
-            this.disableSubmitButtons(false);
+            this.disableSubmitButtons(false);   // Enable submit buttons
+            this.$hiddenButton.remove();        // Remove the hidden button
 
             this.$form
                 .removeClass(this.options.elementClass)
                 .off('.bv')
                 .removeData('bootstrapValidator')
                 // Remove generated hidden elements
-                .find('[data-bv-submit-hidden]').remove();
+                .find('[data-bv-submit-hidden]').remove().end()
+                .find('[type="submit"]').off('click.bv');
         }
     };
 
@@ -1638,7 +1682,23 @@
         live: 'enabled',
 
         // Map the field name with validator rules
-        fields: null
+        fields: null,
+
+        // Use custom event name to avoid window.onerror being invoked by jQuery
+        // See https://github.com/nghuuphuoc/bootstrapvalidator/issues/630
+        events: {
+            formInit: 'init.form.bv',
+            formError: 'error.form.bv',
+            formSuccess: 'success.form.bv',
+            fieldAdded: 'added.field.bv',
+            fieldRemoved: 'removed.field.bv',
+            fieldInit: 'init.field.bv',
+            fieldError: 'error.field.bv',
+            fieldSuccess: 'success.field.bv',
+            fieldStatus: 'status.field.bv',
+            validatorError: 'error.validator.bv',
+            validatorSuccess: 'success.validator.bv'
+        }
     };
 
     // Available validators
@@ -1673,7 +1733,8 @@
                 for (var i = 0; i < ns.length; i++) {
                     context = context[ns[i]];
                 }
-                return context[func].apply(this, args);
+
+                return (typeof context[func] === 'undefined') ? null : context[func].apply(this, args);
             }
         },
 
@@ -1709,6 +1770,9 @@
          */
         date: function(year, month, day, notInFuture) {
             if (isNaN(year) || isNaN(month) || isNaN(day)) {
+                return false;
+            }
+            if (day.length > 2 || month.length > 2 || year.length > 4) {
                 return false;
             }
 
@@ -1876,10 +1940,12 @@
             if (value === '') {
                 return true;
             }
+            if (!$.isNumeric(value)) {
+                return false;
+            }
 
             var min = $.isNumeric(options.min) ? options.min : validator.getDynamicOption($field, options.min),
                 max = $.isNumeric(options.max) ? options.max : validator.getDynamicOption($field, options.max);
-
             value = parseFloat(value);
 			return (options.inclusive === true || options.inclusive === undefined)
                     ? {
@@ -2313,6 +2379,11 @@
 
             options.format = options.format || 'MM/DD/YYYY';
 
+            // #683: Force the format to YYYY-MM-DD as the default browser behaviour when using type="date" attribute
+            if ($field.attr('type') === 'date') {
+                options.format = 'YYYY-MM-DD';
+            }
+
             var formats    = options.format.split(' '),
                 dateFormat = formats[0],
                 timeFormat = (formats.length > 1) ? formats[1] : null,
@@ -2345,7 +2416,7 @@
                 month = date[$.inArray('MM', dateFormat)],
                 day   = date[$.inArray('DD', dateFormat)];
 
-            if (!year || !month || !day) {
+            if (!year || !month || !day || year.length !== 4) {
                 return false;
             }
 
@@ -2365,24 +2436,33 @@
 
                 // Validate seconds
                 if (seconds) {
+                    if (isNaN(seconds) || seconds.length > 2) {
+                        return false;
+                    }
                     seconds = parseInt(seconds, 10);
-                    if (isNaN(seconds) || seconds < 0 || seconds > 60) {
+                    if (seconds < 0 || seconds > 60) {
                         return false;
                     }
                 }
 
                 // Validate hours
                 if (hours) {
+                    if (isNaN(hours) || hours.length > 2) {
+                        return false;
+                    }
                     hours = parseInt(hours, 10);
-                    if (isNaN(hours) || hours < 0 || hours >= 24 || (amOrPm && hours > 12)) {
+                    if (hours < 0 || hours >= 24 || (amOrPm && hours > 12)) {
                         return false;
                     }
                 }
 
                 // Validate minutes
                 if (minutes) {
+                    if (isNaN(minutes) || minutes.length > 2) {
+                        return false;
+                    }
                     minutes = parseInt(minutes, 10);
-                    if (isNaN(minutes) || minutes < 0 || minutes > 59) {
+                    if (minutes < 0 || minutes > 59) {
                         return false;
                     }
                 }
@@ -2421,7 +2501,7 @@
             }
 
             var compareWith = validator.getFieldElements(options.field);
-            if (compareWith === null) {
+            if (compareWith === null || compareWith.length === 0) {
                 return true;
             }
 
@@ -2582,7 +2662,7 @@
                     }
 
                     // Check file type
-                    if (types && $.inArray(files[i].type.toLowerCase(), types) === -1) {
+                    if (files[i].type && types && $.inArray(files[i].type.toLowerCase(), types) === -1) {
                         return false;
                     }
                 }
@@ -2612,8 +2692,9 @@
         },
 
         enableByHtml5: function($field) {
-            var min = $field.attr('min');
-            if (min) {
+            var type = $field.attr('type'),
+                min  = $field.attr('min');
+            if (min && type !== 'date') {
                 return {
                     value: min
                 };
@@ -2643,9 +2724,11 @@
             if (value === '') {
                 return true;
             }
+            if (!$.isNumeric(value)) {
+                return false;
+            }
 
             var compareTo = $.isNumeric(options.value) ? options.value : validator.getDynamicOption($field, options.value);
-
             value = parseFloat(value);
 			return (options.inclusive === true || options.inclusive === undefined)
                     ? {
@@ -2846,85 +2929,85 @@
         // http://www.swift.com/dsp/resources/documents/IBAN_Registry.pdf
         // http://en.wikipedia.org/wiki/International_Bank_Account_Number#IBAN_formats_by_country
         REGEX: {
-            'AD': 'AD[0-9]{2}[0-9]{4}[0-9]{4}[A-Z0-9]{12}',                     // Andorra
-            'AE': 'AE[0-9]{2}[0-9]{3}[0-9]{16}',                                // United Arab Emirates
-            'AL': 'AL[0-9]{2}[0-9]{8}[A-Z0-9]{16}',                             // Albania
-            'AO': 'AO[0-9]{2}[0-9]{21}',                                        // Angola
-            'AT': 'AT[0-9]{2}[0-9]{5}[0-9]{11}',                                // Austria
-            'AZ': 'AZ[0-9]{2}[A-Z]{4}[A-Z0-9]{20}',                             // Azerbaijan
-            'BA': 'BA[0-9]{2}[0-9]{3}[0-9]{3}[0-9]{8}[0-9]{2}',                 // Bosnia and Herzegovina
-            'BE': 'BE[0-9]{2}[0-9]{3}[0-9]{7}[0-9]{2}',                         // Belgium
-            'BF': 'BF[0-9]{2}[0-9]{23}',                                        // Burkina Faso
-            'BG': 'BG[0-9]{2}[A-Z]{4}[0-9]{4}[0-9]{2}[A-Z0-9]{8}',              // Bulgaria
-            'BH': 'BH[0-9]{2}[A-Z]{4}[A-Z0-9]{14}',                             // Bahrain
-            'BI': 'BI[0-9]{2}[0-9]{12}',                                        // Burundi
-            'BJ': 'BJ[0-9]{2}[A-Z]{1}[0-9]{23}',                                // Benin
-            'BR': 'BR[0-9]{2}[0-9]{8}[0-9]{5}[0-9]{10}[A-Z][A-Z0-9]',           // Brazil
-            'CH': 'CH[0-9]{2}[0-9]{5}[A-Z0-9]{12}',                             // Switzerland
-            'CI': 'CI[0-9]{2}[A-Z]{1}[0-9]{23}',                                // Ivory Coast
-            'CM': 'CM[0-9]{2}[0-9]{23}',                                        // Cameroon
-            'CR': 'CR[0-9]{2}[0-9]{3}[0-9]{14}',                                // Costa Rica
-            'CV': 'CV[0-9]{2}[0-9]{21}',                                        // Cape Verde
-            'CY': 'CY[0-9]{2}[0-9]{3}[0-9]{5}[A-Z0-9]{16}',                     // Cyprus
-            'CZ': 'CZ[0-9]{2}[0-9]{20}',                                        // Czech Republic
-            'DE': 'DE[0-9]{2}[0-9]{8}[0-9]{10}',                                // Germany
-            'DK': 'DK[0-9]{2}[0-9]{14}',                                        // Denmark
-            'DO': 'DO[0-9]{2}[A-Z0-9]{4}[0-9]{20}',                             // Dominican Republic
-            'DZ': 'DZ[0-9]{2}[0-9]{20}',                                        // Algeria
-            'EE': 'EE[0-9]{2}[0-9]{2}[0-9]{2}[0-9]{11}[0-9]{1}',                // Estonia
-            'ES': 'ES[0-9]{2}[0-9]{4}[0-9]{4}[0-9]{1}[0-9]{1}[0-9]{10}',        // Spain
-            'FI': 'FI[0-9]{2}[0-9]{6}[0-9]{7}[0-9]{1}',                         // Finland
-            'FO': 'FO[0-9]{2}[0-9]{4}[0-9]{9}[0-9]{1}',                         // Faroe Islands
-            'FR': 'FR[0-9]{2}[0-9]{5}[0-9]{5}[A-Z0-9]{11}[0-9]{2}',             // France
-            'GB': 'GB[0-9]{2}[A-Z]{4}[0-9]{6}[0-9]{8}',                         // United Kingdom
-            'GE': 'GE[0-9]{2}[A-Z]{2}[0-9]{16}',                                // Georgia
-            'GI': 'GI[0-9]{2}[A-Z]{4}[A-Z0-9]{15}',                             // Gibraltar
-            'GL': 'GL[0-9]{2}[0-9]{4}[0-9]{9}[0-9]{1}',                         // Greenland
-            'GR': 'GR[0-9]{2}[0-9]{3}[0-9]{4}[A-Z0-9]{16}',                     // Greece
-            'GT': 'GT[0-9]{2}[A-Z0-9]{4}[A-Z0-9]{20}',                          // Guatemala
-            'HR': 'HR[0-9]{2}[0-9]{7}[0-9]{10}',                                // Croatia
-            'HU': 'HU[0-9]{2}[0-9]{3}[0-9]{4}[0-9]{1}[0-9]{15}[0-9]{1}',        // Hungary
-            'IE': 'IE[0-9]{2}[A-Z]{4}[0-9]{6}[0-9]{8}',                         // Ireland
-            'IL': 'IL[0-9]{2}[0-9]{3}[0-9]{3}[0-9]{13}',                        // Israel
-            'IR': 'IR[0-9]{2}[0-9]{22}',                                        // Iran
-            'IS': 'IS[0-9]{2}[0-9]{4}[0-9]{2}[0-9]{6}[0-9]{10}',                // Iceland
-            'IT': 'IT[0-9]{2}[A-Z]{1}[0-9]{5}[0-9]{5}[A-Z0-9]{12}',             // Italy
-            'JO': 'JO[0-9]{2}[A-Z]{4}[0-9]{4}[0]{8}[A-Z0-9]{10}',               // Jordan
-            'KW': 'KW[0-9]{2}[A-Z]{4}[0-9]{22}',                                // Kuwait
-            'KZ': 'KZ[0-9]{2}[0-9]{3}[A-Z0-9]{13}',                             // Kazakhstan
-            'LB': 'LB[0-9]{2}[0-9]{4}[A-Z0-9]{20}',                             // Lebanon
-            'LI': 'LI[0-9]{2}[0-9]{5}[A-Z0-9]{12}',                             // Liechtenstein
-            'LT': 'LT[0-9]{2}[0-9]{5}[0-9]{11}',                                // Lithuania
-            'LU': 'LU[0-9]{2}[0-9]{3}[A-Z0-9]{13}',                             // Luxembourg
-            'LV': 'LV[0-9]{2}[A-Z]{4}[A-Z0-9]{13}',                             // Latvia
-            'MC': 'MC[0-9]{2}[0-9]{5}[0-9]{5}[A-Z0-9]{11}[0-9]{2}',             // Monaco
-            'MD': 'MD[0-9]{2}[A-Z0-9]{20}',                                     // Moldova
-            'ME': 'ME[0-9]{2}[0-9]{3}[0-9]{13}[0-9]{2}',                        // Montenegro
-            'MG': 'MG[0-9]{2}[0-9]{23}',                                        // Madagascar
-            'MK': 'MK[0-9]{2}[0-9]{3}[A-Z0-9]{10}[0-9]{2}',                     // Macedonia
-            'ML': 'ML[0-9]{2}[A-Z]{1}[0-9]{23}',                                // Mali
-            'MR': 'MR13[0-9]{5}[0-9]{5}[0-9]{11}[0-9]{2}',                      // Mauritania
-            'MT': 'MT[0-9]{2}[A-Z]{4}[0-9]{5}[A-Z0-9]{18}',                     // Malta
-            'MU': 'MU[0-9]{2}[A-Z]{4}[0-9]{2}[0-9]{2}[0-9]{12}[0-9]{3}[A-Z]{3}',// Mauritius
-            'MZ': 'MZ[0-9]{2}[0-9]{21}',                                        // Mozambique
-            'NL': 'NL[0-9]{2}[A-Z]{4}[0-9]{10}',                                // Netherlands
-            'NO': 'NO[0-9]{2}[0-9]{4}[0-9]{6}[0-9]{1}',                         // Norway
-            'PK': 'PK[0-9]{2}[A-Z]{4}[A-Z0-9]{16}',                             // Pakistan
-            'PL': 'PL[0-9]{2}[0-9]{8}[0-9]{16}',                                // Poland
-            'PS': 'PS[0-9]{2}[A-Z]{4}[A-Z0-9]{21}',                             // Palestinian
-            'PT': 'PT[0-9]{2}[0-9]{4}[0-9]{4}[0-9]{11}[0-9]{2}',                // Portugal
-            'QA': 'QA[0-9]{2}[A-Z]{4}[A-Z0-9]{21}',                             // Qatar
-            'RO': 'RO[0-9]{2}[A-Z]{4}[A-Z0-9]{16}',                             // Romania
-            'RS': 'RS[0-9]{2}[0-9]{3}[0-9]{13}[0-9]{2}',                        // Serbia
-            'SA': 'SA[0-9]{2}[0-9]{2}[A-Z0-9]{18}',                             // Saudi Arabia
-            'SE': 'SE[0-9]{2}[0-9]{3}[0-9]{16}[0-9]{1}',                        // Sweden
-            'SI': 'SI[0-9]{2}[0-9]{5}[0-9]{8}[0-9]{2}',                         // Slovenia
-            'SK': 'SK[0-9]{2}[0-9]{4}[0-9]{6}[0-9]{10}',                        // Slovakia
-            'SM': 'SM[0-9]{2}[A-Z]{1}[0-9]{5}[0-9]{5}[A-Z0-9]{12}',             // San Marino
-            'SN': 'SN[0-9]{2}[A-Z]{1}[0-9]{23}',                                // Senegal
-            'TN': 'TN59[0-9]{2}[0-9]{3}[0-9]{13}[0-9]{2}',                      // Tunisia
-            'TR': 'TR[0-9]{2}[0-9]{5}[A-Z0-9]{1}[A-Z0-9]{16}',                  // Turkey
-            'VG': 'VG[0-9]{2}[A-Z]{4}[0-9]{16}'                                 // Virgin Islands, British
+            AD: 'AD[0-9]{2}[0-9]{4}[0-9]{4}[A-Z0-9]{12}',                       // Andorra
+            AE: 'AE[0-9]{2}[0-9]{3}[0-9]{16}',                                  // United Arab Emirates
+            AL: 'AL[0-9]{2}[0-9]{8}[A-Z0-9]{16}',                               // Albania
+            AO: 'AO[0-9]{2}[0-9]{21}',                                          // Angola
+            AT: 'AT[0-9]{2}[0-9]{5}[0-9]{11}',                                  // Austria
+            AZ: 'AZ[0-9]{2}[A-Z]{4}[A-Z0-9]{20}',                               // Azerbaijan
+            BA: 'BA[0-9]{2}[0-9]{3}[0-9]{3}[0-9]{8}[0-9]{2}',                   // Bosnia and Herzegovina
+            BE: 'BE[0-9]{2}[0-9]{3}[0-9]{7}[0-9]{2}',                           // Belgium
+            BF: 'BF[0-9]{2}[0-9]{23}',                                          // Burkina Faso
+            BG: 'BG[0-9]{2}[A-Z]{4}[0-9]{4}[0-9]{2}[A-Z0-9]{8}',                // Bulgaria
+            BH: 'BH[0-9]{2}[A-Z]{4}[A-Z0-9]{14}',                               // Bahrain
+            BI: 'BI[0-9]{2}[0-9]{12}',                                          // Burundi
+            BJ: 'BJ[0-9]{2}[A-Z]{1}[0-9]{23}',                                  // Benin
+            BR: 'BR[0-9]{2}[0-9]{8}[0-9]{5}[0-9]{10}[A-Z][A-Z0-9]',             // Brazil
+            CH: 'CH[0-9]{2}[0-9]{5}[A-Z0-9]{12}',                               // Switzerland
+            CI: 'CI[0-9]{2}[A-Z]{1}[0-9]{23}',                                  // Ivory Coast
+            CM: 'CM[0-9]{2}[0-9]{23}',                                          // Cameroon
+            CR: 'CR[0-9]{2}[0-9]{3}[0-9]{14}',                                  // Costa Rica
+            CV: 'CV[0-9]{2}[0-9]{21}',                                          // Cape Verde
+            CY: 'CY[0-9]{2}[0-9]{3}[0-9]{5}[A-Z0-9]{16}',                       // Cyprus
+            CZ: 'CZ[0-9]{2}[0-9]{20}',                                          // Czech Republic
+            DE: 'DE[0-9]{2}[0-9]{8}[0-9]{10}',                                  // Germany
+            DK: 'DK[0-9]{2}[0-9]{14}',                                          // Denmark
+            DO: 'DO[0-9]{2}[A-Z0-9]{4}[0-9]{20}',                               // Dominican Republic
+            DZ: 'DZ[0-9]{2}[0-9]{20}',                                          // Algeria
+            EE: 'EE[0-9]{2}[0-9]{2}[0-9]{2}[0-9]{11}[0-9]{1}',                  // Estonia
+            ES: 'ES[0-9]{2}[0-9]{4}[0-9]{4}[0-9]{1}[0-9]{1}[0-9]{10}',          // Spain
+            FI: 'FI[0-9]{2}[0-9]{6}[0-9]{7}[0-9]{1}',                           // Finland
+            FO: 'FO[0-9]{2}[0-9]{4}[0-9]{9}[0-9]{1}',                           // Faroe Islands
+            FR: 'FR[0-9]{2}[0-9]{5}[0-9]{5}[A-Z0-9]{11}[0-9]{2}',               // France
+            GB: 'GB[0-9]{2}[A-Z]{4}[0-9]{6}[0-9]{8}',                           // United Kingdom
+            GE: 'GE[0-9]{2}[A-Z]{2}[0-9]{16}',                                  // Georgia
+            GI: 'GI[0-9]{2}[A-Z]{4}[A-Z0-9]{15}',                               // Gibraltar
+            GL: 'GL[0-9]{2}[0-9]{4}[0-9]{9}[0-9]{1}',                           // Greenland
+            GR: 'GR[0-9]{2}[0-9]{3}[0-9]{4}[A-Z0-9]{16}',                       // Greece
+            GT: 'GT[0-9]{2}[A-Z0-9]{4}[A-Z0-9]{20}',                            // Guatemala
+            HR: 'HR[0-9]{2}[0-9]{7}[0-9]{10}',                                  // Croatia
+            HU: 'HU[0-9]{2}[0-9]{3}[0-9]{4}[0-9]{1}[0-9]{15}[0-9]{1}',          // Hungary
+            IE: 'IE[0-9]{2}[A-Z]{4}[0-9]{6}[0-9]{8}',                           // Ireland
+            IL: 'IL[0-9]{2}[0-9]{3}[0-9]{3}[0-9]{13}',                          // Israel
+            IR: 'IR[0-9]{2}[0-9]{22}',                                          // Iran
+            IS: 'IS[0-9]{2}[0-9]{4}[0-9]{2}[0-9]{6}[0-9]{10}',                  // Iceland
+            IT: 'IT[0-9]{2}[A-Z]{1}[0-9]{5}[0-9]{5}[A-Z0-9]{12}',               // Italy
+            JO: 'JO[0-9]{2}[A-Z]{4}[0-9]{4}[0]{8}[A-Z0-9]{10}',                 // Jordan
+            KW: 'KW[0-9]{2}[A-Z]{4}[0-9]{22}',                                  // Kuwait
+            KZ: 'KZ[0-9]{2}[0-9]{3}[A-Z0-9]{13}',                               // Kazakhstan
+            LB: 'LB[0-9]{2}[0-9]{4}[A-Z0-9]{20}',                               // Lebanon
+            LI: 'LI[0-9]{2}[0-9]{5}[A-Z0-9]{12}',                               // Liechtenstein
+            LT: 'LT[0-9]{2}[0-9]{5}[0-9]{11}',                                  // Lithuania
+            LU: 'LU[0-9]{2}[0-9]{3}[A-Z0-9]{13}',                               // Luxembourg
+            LV: 'LV[0-9]{2}[A-Z]{4}[A-Z0-9]{13}',                               // Latvia
+            MC: 'MC[0-9]{2}[0-9]{5}[0-9]{5}[A-Z0-9]{11}[0-9]{2}',               // Monaco
+            MD: 'MD[0-9]{2}[A-Z0-9]{20}',                                       // Moldova
+            ME: 'ME[0-9]{2}[0-9]{3}[0-9]{13}[0-9]{2}',                          // Montenegro
+            MG: 'MG[0-9]{2}[0-9]{23}',                                          // Madagascar
+            MK: 'MK[0-9]{2}[0-9]{3}[A-Z0-9]{10}[0-9]{2}',                       // Macedonia
+            ML: 'ML[0-9]{2}[A-Z]{1}[0-9]{23}',                                  // Mali
+            MR: 'MR13[0-9]{5}[0-9]{5}[0-9]{11}[0-9]{2}',                        // Mauritania
+            MT: 'MT[0-9]{2}[A-Z]{4}[0-9]{5}[A-Z0-9]{18}',                       // Malta
+            MU: 'MU[0-9]{2}[A-Z]{4}[0-9]{2}[0-9]{2}[0-9]{12}[0-9]{3}[A-Z]{3}',  // Mauritius
+            MZ: 'MZ[0-9]{2}[0-9]{21}',                                          // Mozambique
+            NL: 'NL[0-9]{2}[A-Z]{4}[0-9]{10}',                                  // Netherlands
+            NO: 'NO[0-9]{2}[0-9]{4}[0-9]{6}[0-9]{1}',                           // Norway
+            PK: 'PK[0-9]{2}[A-Z]{4}[A-Z0-9]{16}',                               // Pakistan
+            PL: 'PL[0-9]{2}[0-9]{8}[0-9]{16}',                                  // Poland
+            PS: 'PS[0-9]{2}[A-Z]{4}[A-Z0-9]{21}',                               // Palestinian
+            PT: 'PT[0-9]{2}[0-9]{4}[0-9]{4}[0-9]{11}[0-9]{2}',                  // Portugal
+            QA: 'QA[0-9]{2}[A-Z]{4}[A-Z0-9]{21}',                               // Qatar
+            RO: 'RO[0-9]{2}[A-Z]{4}[A-Z0-9]{16}',                               // Romania
+            RS: 'RS[0-9]{2}[0-9]{3}[0-9]{13}[0-9]{2}',                          // Serbia
+            SA: 'SA[0-9]{2}[0-9]{2}[A-Z0-9]{18}',                               // Saudi Arabia
+            SE: 'SE[0-9]{2}[0-9]{3}[0-9]{16}[0-9]{1}',                          // Sweden
+            SI: 'SI[0-9]{2}[0-9]{5}[0-9]{8}[0-9]{2}',                           // Slovenia
+            SK: 'SK[0-9]{2}[0-9]{4}[0-9]{6}[0-9]{10}',                          // Slovakia
+            SM: 'SM[0-9]{2}[A-Z]{1}[0-9]{5}[0-9]{5}[A-Z0-9]{12}',               // San Marino
+            SN: 'SN[0-9]{2}[A-Z]{1}[0-9]{23}',                                  // Senegal
+            TN: 'TN59[0-9]{2}[0-9]{3}[0-9]{13}[0-9]{2}',                        // Tunisia
+            TR: 'TR[0-9]{2}[0-9]{5}[A-Z0-9]{1}[A-Z0-9]{16}',                    // Turkey
+            VG: 'VG[0-9]{2}[A-Z]{4}[0-9]{16}'                                   // Virgin Islands, British
         },
 
         /**
@@ -3837,7 +3920,7 @@
             }
 
             var compareWith = validator.getFieldElements(options.field);
-            if (compareWith === null) {
+            if (compareWith === null || compareWith.length === 0) {
                 return true;
             }
 
@@ -3895,6 +3978,51 @@
     };
 }(window.jQuery));
 ;(function($) {
+    $.fn.bootstrapValidator.i18n.imo = $.extend($.fn.bootstrapValidator.i18n.imo || {}, {
+        'default': 'Please enter a valid IMO number'
+    });
+
+    $.fn.bootstrapValidator.validators.imo = {
+        /**
+         * Validate IMO (International Maritime Organization)
+         * Examples:
+         * - Valid: IMO 8814275, IMO 9176187
+         * - Invalid: IMO 8814274
+         *
+         * @see http://en.wikipedia.org/wiki/IMO_Number
+         * @param {BootstrapValidator} validator The validator plugin instance
+         * @param {jQuery} $field Field element
+         * @param {Object} options Can consist of the following keys:
+         * - message: The invalid message
+         * @returns {Boolean}
+         */
+        validate: function(validator, $field, options) {
+            var value = $field.val();
+            if (value === '') {
+                return true;
+            }
+
+            if (!/^IMO \d{7}$/i.test(value)) {
+                return false;
+            }
+            
+            // Grab just the digits
+            var sum    = 0,
+                digits = value.replace(/^.*(\d{7})$/, '$1');
+            
+            // Go over each char, multiplying by the inverse of it's position
+            // IMO 9176187
+            // (9 * 7) + (1 * 6) + (7 * 5) + (6 * 4) + (1 * 3) + (8 * 2) = 147
+            // Take the last digit of that, that's the check digit (7)
+            for (var i = 6; i >= 1; i--) {
+                sum += (digits.slice((6 - i), -i) * (i + 1));
+            }
+
+            return sum % 10 === parseInt(digits.charAt(6), 10);
+        }
+    };
+}(window.jQuery));
+;(function($) {
     $.fn.bootstrapValidator.i18n.integer = $.extend($.fn.bootstrapValidator.i18n.integer || {}, {
         'default': 'Please enter a valid number'
     });
@@ -3914,6 +4042,10 @@
          * @returns {Boolean}
          */
         validate: function(validator, $field, options) {
+            if (this.enableByHtml5($field) && $field.get(0).validity && $field.get(0).validity.badInput === true) {
+                return false;
+            }
+
             var value = $field.val();
             if (value === '') {
                 return true;
@@ -3954,23 +4086,37 @@
             }
             options = $.extend({}, { ipv4: true, ipv6: true }, options);
 
-            if (options.ipv4) {
-                return {
-                    valid: /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/.test(value),
-                    message: options.message || $.fn.bootstrapValidator.i18n.ip.ipv4
-                };
-            } else if (options.ipv6) {
-                return {
-                    valid: /^\s*((([0-9A-Fa-f]{1,4}:){7}([0-9A-Fa-f]{1,4}|:))|(([0-9A-Fa-f]{1,4}:){6}(:[0-9A-Fa-f]{1,4}|((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){5}(((:[0-9A-Fa-f]{1,4}){1,2})|:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){4}(((:[0-9A-Fa-f]{1,4}){1,3})|((:[0-9A-Fa-f]{1,4})?:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){3}(((:[0-9A-Fa-f]{1,4}){1,4})|((:[0-9A-Fa-f]{1,4}){0,2}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){2}(((:[0-9A-Fa-f]{1,4}){1,5})|((:[0-9A-Fa-f]{1,4}){0,3}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){1}(((:[0-9A-Fa-f]{1,4}){1,6})|((:[0-9A-Fa-f]{1,4}){0,4}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(:(((:[0-9A-Fa-f]{1,4}){1,7})|((:[0-9A-Fa-f]{1,4}){0,5}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:)))(%.+)?\s*$/.test(value),
-                    message: options.message || $.fn.bootstrapValidator.i18n.ip.ipv6
-                };
+            var ipv4Regex = /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/,
+                ipv6Regex = /^\s*((([0-9A-Fa-f]{1,4}:){7}([0-9A-Fa-f]{1,4}|:))|(([0-9A-Fa-f]{1,4}:){6}(:[0-9A-Fa-f]{1,4}|((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){5}(((:[0-9A-Fa-f]{1,4}){1,2})|:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){4}(((:[0-9A-Fa-f]{1,4}){1,3})|((:[0-9A-Fa-f]{1,4})?:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){3}(((:[0-9A-Fa-f]{1,4}){1,4})|((:[0-9A-Fa-f]{1,4}){0,2}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){2}(((:[0-9A-Fa-f]{1,4}){1,5})|((:[0-9A-Fa-f]{1,4}){0,3}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){1}(((:[0-9A-Fa-f]{1,4}){1,6})|((:[0-9A-Fa-f]{1,4}){0,4}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(:(((:[0-9A-Fa-f]{1,4}){1,7})|((:[0-9A-Fa-f]{1,4}){0,5}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:)))(%.+)?\s*$/,
+                valid     = false,
+                message;
+
+            switch (true) {
+                case (options.ipv4 && !options.ipv6):
+                    valid   = ipv4Regex.test(value);
+                    message = options.message || $.fn.bootstrapValidator.i18n.ip.ipv4;
+                    break;
+
+                case (!options.ipv4 && options.ipv6):
+                    valid   = ipv6Regex.test(value);
+                    message = options.message || $.fn.bootstrapValidator.i18n.ip.ipv6;
+                    break;
+
+                case (options.ipv4 && options.ipv6):
+                /* falls through */
+                default:
+                    valid   = ipv4Regex.test(value) && ipv6Regex.test(value);
+                    message = options.message || $.fn.bootstrapValidator.i18n.ip['default'];
+                    break;
             }
 
-            return false;
+            return {
+                valid: valid,
+                message: message
+            };
         }
     };
-}(window.jQuery));
-;(function($) {
+}(window.jQuery));;(function($) {
     $.fn.bootstrapValidator.i18n.isbn = $.extend($.fn.bootstrapValidator.i18n.isbn || {}, {
         'default': 'Please enter a valid ISBN number'
     });
@@ -4234,8 +4380,9 @@
         },
 
         enableByHtml5: function($field) {
-            var max = $field.attr('max');
-            if (max) {
+            var type = $field.attr('type'),
+                max  = $field.attr('max');
+            if (max && type !== 'date') {
                 return {
                     value: max
                 };
@@ -4265,9 +4412,11 @@
             if (value === '') {
                 return true;
             }
+            if (!$.isNumeric(value)) {
+                return false;
+            }
 
             var compareTo = $.isNumeric(options.value) ? options.value : validator.getDynamicOption($field, options.value);
-
             value = parseFloat(value);
             return (options.inclusive === true || options.inclusive === undefined)
                     ? {
@@ -4303,6 +4452,89 @@
             }
 
             return /^([0-9A-F]{2}[:-]){5}([0-9A-F]{2})$/.test(value);
+        }
+    };
+}(window.jQuery));
+;(function($) {
+    $.fn.bootstrapValidator.i18n.meid = $.extend($.fn.bootstrapValidator.i18n.meid || {}, {
+        'default': 'Please enter a valid MEID number'
+    });
+
+    $.fn.bootstrapValidator.validators.meid = {
+        /**
+         * Validate MEID (Mobile Equipment Identifier)
+         * Examples:
+         * - Valid: 293608736500703710, 29360-87365-0070-3710, AF0123450ABCDE, AF-012345-0ABCDE
+         * - Invalid: 2936087365007037101
+         *
+         * @see http://en.wikipedia.org/wiki/Mobile_equipment_identifier
+         * @param {BootstrapValidator} validator The validator plugin instance
+         * @param {jQuery} $field Field element
+         * @param {Object} options Can consist of the following keys:
+         * - message: The invalid message
+         * @returns {Boolean}
+         */
+        validate: function(validator, $field, options) {
+            var value = $field.val();
+            if (value === '') {
+                return true;
+            }
+
+            switch (true) {
+                // 14 digit hex representation (no check digit)
+                case /^[0-9A-F]{15}$/i.test(value):
+                // 14 digit hex representation + dashes or spaces (no check digit)
+                case /^[0-9A-F]{2}[- ][0-9A-F]{6}[- ][0-9A-F]{6}[- ][0-9A-F]$/i.test(value):
+                // 18 digit decimal representation (no check digit)
+                case /^\d{19}$/.test(value):
+                // 18 digit decimal representation + dashes or spaces (no check digit)
+                case /^\d{5}[- ]\d{5}[- ]\d{4}[- ]\d{4}[- ]\d$/.test(value):
+                    // Grab the check digit
+                    var cd = value.charAt(value.length - 1);
+
+                    // Strip any non-hex chars
+                    value = value.replace(/[- ]/g, '');
+
+                    // If it's all digits, luhn base 10 is used
+                    if (value.match(/^\d*$/i)) {
+                        return $.fn.bootstrapValidator.helpers.luhn(value);
+                    }
+
+                    // Strip the check digit
+                    value = value.slice(0, -1);
+
+                    // Get every other char, and double it
+                    var cdCalc = '';
+                    for (var i = 1; i <= 13; i += 2) {
+                        cdCalc += (parseInt(value.charAt(i), 16) * 2).toString(16);
+                    }
+
+                    // Get the sum of each char in the string
+                    var sum = 0;
+                    for (i = 0; i < cdCalc.length; i++) {
+                        sum += parseInt(cdCalc.charAt(i), 16);
+                    }
+
+                    // If the last digit of the calc is 0, the check digit is 0
+                    return (sum % 10 === 0)
+                            ? (cd === '0')
+                            // Subtract it from the next highest 10s number (64 goes to 70) and subtract the sum
+                            // Double it and turn it into a hex char
+                            : (cd === ((Math.floor((sum + 10) / 10) * 10 - sum) * 2).toString(16));
+
+                // 14 digit hex representation (no check digit)
+                case /^[0-9A-F]{14}$/i.test(value):
+                // 14 digit hex representation + dashes or spaces (no check digit)
+                case /^[0-9A-F]{2}[- ][0-9A-F]{6}[- ][0-9A-F]{6}$/i.test(value):
+                // 18 digit decimal representation (no check digit)
+                case /^\d{18}$/.test(value):
+                // 18 digit decimal representation + dashes or spaces (no check digit)
+                case /^\d{5}[- ]\d{5}[- ]\d{4}[- ]\d{4}$/.test(value):
+                    return true;
+
+                default:
+                    return false;
+            }
         }
     };
 }(window.jQuery));
@@ -4364,6 +4596,10 @@
          * @returns {Boolean}
          */
         validate: function(validator, $field, options) {
+            if (this.enableByHtml5($field) && $field.get(0).validity && $field.get(0).validity.badInput === true) {
+                return false;
+            }
+
             var value = $field.val();
             if (value === '') {
                 return true;
@@ -4383,7 +4619,12 @@
         countryNotSupported: 'The country code %s is not supported',
         country: 'Please enter a valid phone number in %s',
         countries: {
+            BR: 'Brazil',
+            ES: 'Spain',
+            FR: 'France',
             GB: 'United Kingdom',
+            MA: 'Morocco',
+            PK: 'Pakistan',
             US: 'USA'
         }
     });
@@ -4395,7 +4636,7 @@
         },
 
         // The supported countries
-        COUNTRY_CODES: ['GB', 'US'],
+        COUNTRY_CODES: ['BR', 'ES', 'FR', 'GB', 'MA', 'PK', 'US'],
 
         /**
          * Return true if the input value contains a valid phone number for the country
@@ -4411,7 +4652,6 @@
          *      - Name of callback function that returns the country code
          *      - A callback function that returns the country code
          *
-         * Currently it only supports United State (US) or United Kingdom (GB) countries
          * @returns {Boolean|Object}
          */
         validate: function(validator, $field, options) {
@@ -4435,6 +4675,24 @@
 
             var isValid = true;
             switch (country.toUpperCase()) {
+                case 'BR':
+                    // Test: http://regexr.com/399m1
+                    value   = $.trim(value);
+                    isValid = (/^(([\d]{4}[-.\s]{1}[\d]{2,3}[-.\s]{1}[\d]{2}[-.\s]{1}[\d]{2})|([\d]{4}[-.\s]{1}[\d]{3}[-.\s]{1}[\d]{4})|((\(?\+?[0-9]{2}\)?\s?)?(\(?\d{2}\)?\s?)?\d{4,5}[-.\s]?\d{4}))$/).test(value);
+                    break;
+
+                case 'ES':
+                    // http://regex101.com/r/rB9mA9/1
+                    value   = $.trim(value);
+                    isValid = (/^(?:(?:(?:\+|00)34\D?))?(?:9|6)(?:\d\D?){8}$/).test(value);
+                    break;
+
+                case 'FR':
+                    // http://regexr.com/39a2p
+                    value   = $.trim(value);
+                    isValid = (/^(?:(?:(?:\+|00)33[ ]?(?:\(0\)[ ]?)?)|0){1}[1-9]{1}([ .-]?)(?:\d{2}\1?){3}\d{2}$/).test(value);
+                    break;
+
             	case 'GB':
             		// http://aa-asterisk.org.uk/index.php/Regular_Expressions_for_Validating_and_Formatting_GB_Telephone_Numbers#Match_GB_telephone_number_in_any_format
             		// Test: http://regexr.com/38uhv
@@ -4442,6 +4700,19 @@
             		isValid = (/^\(?(?:(?:0(?:0|11)\)?[\s-]?\(?|\+)44\)?[\s-]?\(?(?:0\)?[\s-]?\(?)?|0)(?:\d{2}\)?[\s-]?\d{4}[\s-]?\d{4}|\d{3}\)?[\s-]?\d{3}[\s-]?\d{3,4}|\d{4}\)?[\s-]?(?:\d{5}|\d{3}[\s-]?\d{3})|\d{5}\)?[\s-]?\d{4,5}|8(?:00[\s-]?11[\s-]?11|45[\s-]?46[\s-]?4\d))(?:(?:[\s-]?(?:x|ext\.?\s?|\#)\d+)?)$/).test(value);
                     break;
 
+                case 'MA':
+                    // http://en.wikipedia.org/wiki/Telephone_numbers_in_Morocco
+                    // Test: http://regexr.com/399n8
+                    value   = $.trim(value);
+                    isValid = (/^(?:(?:(?:\+|00)212[\s]?(?:[\s]?\(0\)[\s]?)?)|0){1}(?:5[\s.-]?[2-3]|6[\s.-]?[13-9]){1}[0-9]{1}(?:[\s.-]?\d{2}){3}$/).test(value);
+                    break;
+                
+                case 'PK':
+                    // http://regex101.com/r/yH8aV9/2
+                    value   = $.trim(value);
+                    isValid = (/^0?3[0-9]{2}[0-9]{7}$/).test(value);
+                    break;
+                
                 case 'US':
                 /* falls through */
                 default:
@@ -4511,8 +4782,9 @@
     $.fn.bootstrapValidator.validators.remote = {
         html5Attributes: {
             message: 'message',
-            url: 'url',
-            name: 'name'
+            name: 'name',
+            type: 'type',
+            url: 'url'
         },
 
         /**
@@ -4529,6 +4801,7 @@
          *  }
          * - name {String} [optional]: Override the field name for the request.
          * - message: The invalid message
+         * - headers: Additional headers
          * @returns {Boolean|Deferred}
          */
         validate: function(validator, $field, options) {
@@ -4537,10 +4810,11 @@
                 return true;
             }
 
-            var name = $field.attr('data-bv-field'),
-                data = options.data || {},
-                url  = options.url,
-                type = options.type || 'POST';
+            var name    = $field.attr('data-bv-field'),
+                data    = options.data || {},
+                url     = options.url,
+                type    = options.type || 'POST',
+                headers = options.headers || {};
 
             // Support dynamic data
             if ('function' === typeof data) {
@@ -4557,6 +4831,7 @@
             var dfd = new $.Deferred();
             var xhr = $.ajax({
                 type: type,
+                headers: headers,
                 url: url,
                 dataType: 'json',
                 data: data
@@ -4946,7 +5221,7 @@
             // Notes on possible differences from a standard/generic validation:
             //
             // - utf-8 char class take in consideration the full Unicode range
-            // - TLDs have been made mandatory so single names like "localhost" fails
+            // - TLDs are mandatory unless `allowLocal` is true
             // - protocols have been restricted to ftp, http and https only as requested
             //
             // Changes:
@@ -4956,6 +5231,7 @@
             //   (since they are broadcast/network addresses)
             //
             // - Added exclusion of private, reserved and/or local networks ranges
+            //   unless `allowLocal` is true
             //
             var allowLocal = options.allowLocal === true || options.allowLocal === 'true',
                 urlExp     = new RegExp(
@@ -4987,6 +5263,8 @@
                     "(?:\\.(?:[a-z\\u00a1-\\uffff0-9]+-?)*[a-z\\u00a1-\\uffff0-9]+)*" +
                     // TLD identifier
                     "(?:\\.(?:[a-z\\u00a1-\\uffff]{2,}))" +
+                    // Allow intranet sites (no TLD) if `allowLocal` is true
+                    (allowLocal ? '?' : '') +
                     ")" +
                     // port number
                     "(?::\\d{2,5})?" +
@@ -5054,6 +5332,7 @@
             AT: 'Austrian',
             BE: 'Belgian',
             BG: 'Bulgarian',
+            BR: 'Brazilian',
             CH: 'Swiss',
             CY: 'Cypriot',
             CZ: 'Czech',
@@ -5069,6 +5348,7 @@
             HU: 'Hungarian',
             HR: 'Croatian',
             IE: 'Irish',
+            IS: 'Iceland',
             IT: 'Italian',
             LT: 'Lithuanian',
             LU: 'Luxembourg',
@@ -5083,7 +5363,8 @@
             RS: 'Serbian',
             SE: 'Swedish',
             SI: 'Slovenian',
-            SK: 'Slovak'
+            SK: 'Slovak',
+            ZA: 'South African'
         }
     });
 
@@ -5095,8 +5376,8 @@
 
         // Supported country codes
         COUNTRY_CODES: [
-            'AT', 'BE', 'BG', 'HR', 'CY', 'CZ', 'DK', 'EE', 'FI', 'FR', 'DE', 'GR', 'EL', 'HU', 'IE', 'IT',
-            'LV', 'LT', 'LU', 'MT', 'NL', 'NO', 'PL', 'PT', 'RO', 'RU', 'RS', 'SK', 'SI', 'ES', 'SE', 'CH', 'GB'
+            'AT', 'BE', 'BG', 'BR', 'CH', 'CY', 'CZ', 'DE', 'DK', 'EE', 'EL', 'ES', 'FI', 'FR', 'GB', 'GR', 'HR', 'HU',
+            'IE', 'IS', 'IT', 'LT', 'LU', 'LV', 'MT', 'NL', 'NO', 'PL', 'PT', 'RO', 'RU', 'RS', 'SE', 'SK', 'SI', 'ZA'
         ],
 
         /**
@@ -5300,6 +5581,64 @@
             }
 
             return false;
+        },
+        
+        /**
+         * Validate Brazilian VAT number (CNPJ)
+         *
+         * @param {String} value VAT number
+         * @returns {Boolean}
+         */
+        _br: function(value) {
+            if (value === '') {
+                return true;
+            }
+            var cnpj = value.replace(/[^\d]+/g, '');
+            if (cnpj === '' || cnpj.length !== 14) {
+                return false;
+            }
+
+            // Remove invalids CNPJs
+            if (cnpj === '00000000000000' || cnpj === '11111111111111' || cnpj === '22222222222222' ||
+                cnpj === '33333333333333' || cnpj === '44444444444444' || cnpj === '55555555555555' ||
+                cnpj === '66666666666666' || cnpj === '77777777777777' || cnpj === '88888888888888' ||
+                cnpj === '99999999999999')
+            {
+                return false;
+            }
+
+            // Validate verification digits
+            var length  = cnpj.length - 2,
+                numbers = cnpj.substring(0, length),
+                digits  = cnpj.substring(length),
+                sum     = 0,
+                pos     = length - 7;
+
+            for (var i = length; i >= 1; i--) {
+                sum += parseInt(numbers.charAt(length - i), 10) * pos--;
+                if (pos < 2) {
+                    pos = 9;
+                }
+            }
+
+            var result = sum % 11 < 2 ? 0 : 11 - sum % 11;
+            if (result !== parseInt(digits.charAt(0), 10)) {
+                return false;
+            }
+
+            length  = length + 1;
+            numbers = cnpj.substring(0, length);
+            sum     = 0;
+            pos     = length - 7;
+            for (i = length; i >= 1; i--) {
+                sum += parseInt(numbers.charAt(length - i), 10) * pos--;
+                if (pos < 2) {
+                    pos = 9;
+                }
+            }
+
+            result = sum % 11 < 2 ? 0 : 11 - sum % 11;
+            return (result === parseInt(digits.charAt(1), 10));
         },
 
         /**
@@ -5641,7 +5980,7 @@
 
             value = value.substr(2);
 
-			if (!$.fn.bootstrapValidator.helpers.luhn(value.substr(2))) {
+            if (!$.fn.bootstrapValidator.helpers.luhn(value.substr(2))) {
                 return false;
             }
 
@@ -5832,6 +6171,19 @@
             }
 
             return true;
+        },
+
+        /**
+         * Validate Icelandic VAT (VSK) number
+         * Examples:
+         * - Valid: 12345, 123456
+         * - Invalid: 1234567
+         *
+         * @params {String} value VAT number
+         * @returns {Boolean}
+         */
+        _is: function(value) {
+            return /^IS\d{5,6}$/.test(value);
         },
 
         /**
@@ -6262,6 +6614,19 @@
             }
 
             return (parseInt(value.substr(2), 10) % 11 === 0);
+        },
+
+        /**
+         * Validate South African VAT number
+         * Examples:
+         * - Valid: 4012345678
+         * - Invalid: 40123456789, 3012345678
+         *
+         * @params {String} value VAT number
+         * @returns {Boolean}
+         */
+         _za: function(value) {
+            return /^ZA4\d{9}$/.test(value);
         }
     };
 }(window.jQuery));
@@ -6320,14 +6685,16 @@
         countryNotSupported: 'The country code %s is not supported',
         country: 'Please enter a valid %s',
         countries: {
-            'CA': 'Canadian postal code',
-            'DK': 'Danish postal code',
-            'GB': 'United Kingdom postal code',
-            'IT': 'Italian postal code',
-            'NL': 'Dutch postal code',
-            'SE': 'Swiss postal code',
-            'SG': 'Singapore postal code',
-            'US': 'US zip code'
+            BR: 'Brazilian postal code',
+            CA: 'Canadian postal code',
+            DK: 'Danish postal code',
+            GB: 'United Kingdom postal code',
+            IT: 'Italian postal code',
+            MA: 'Moroccan postal code',
+            NL: 'Dutch postal code',
+            SE: 'Swiss postal code',
+            SG: 'Singapore postal code',
+            US: 'US zip code'
         }
     });
 
@@ -6337,7 +6704,7 @@
             country: 'country'
         },
 
-        COUNTRY_CODES: ['CA', 'DK', 'GB', 'IT', 'NL', 'SE', 'SG', 'US'],
+        COUNTRY_CODES: ['BR', 'CA', 'DK', 'GB', 'IT', 'MA', 'NL', 'SE', 'SG', 'US'],
 
         /**
          * Return true if and only if the input value is a valid country zip code
@@ -6350,16 +6717,6 @@
          *
          * The country can be defined by:
          * - An ISO 3166 country code
-         * Currently it supports the following countries:
-         *      - US (United States)
-         *      - CA (Canada)
-         *      - DK (Denmark)
-         *      - GB (United Kingdom)
-         *      - IT (Italy)
-         *      - NL (Netherlands)
-         *      - SE (Sweden)
-         *      - SG (Singapore)
-         *
          * - Name of field which its value defines the country code
          * - Name of callback function that returns the country code
          * - A callback function that returns the country code
@@ -6391,6 +6748,10 @@
             var isValid = false;
             country = country.toUpperCase();
             switch (country) {
+                case 'BR':
+                    isValid = /^(\d{2})([\.]?)(\d{3})([\-]?)(\d{3})$/.test(value);
+                    break;
+
                 case 'CA':
                     isValid = /^(?:A|B|C|E|G|H|J|K|L|M|N|P|R|S|T|V|X|Y){1}[0-9]{1}(?:A|B|C|E|G|H|J|K|L|M|N|P|R|S|T|V|W|X|Y|Z){1}\s?[0-9]{1}(?:A|B|C|E|G|H|J|K|L|M|N|P|R|S|T|V|W|X|Y|Z){1}[0-9]{1}$/i.test(value);
                     break;
@@ -6408,6 +6769,11 @@
                     isValid = /^(I-|IT-)?\d{5}$/i.test(value);
                     break;
 
+                // http://en.wikipedia.org/wiki/List_of_postal_codes_in_Morocco
+                case 'MA':
+                    isValid = /^[1-9][0-9]{4}$/i.test(value);
+                    break;
+
                 // http://en.wikipedia.org/wiki/Postal_codes_in_the_Netherlands
                 case 'NL':
                     isValid = /^[1-9][0-9]{3} ?(?!sa|sd|ss)[a-z]{2}$/i.test(value);
@@ -6419,8 +6785,8 @@
 
                 case 'SG':
                     isValid = /^([0][1-9]|[1-6][0-9]|[7]([0-3]|[5-9])|[8][0-2])(\d{4})$/i.test(value);
-                    break;
-
+                    break;                
+                
                 case 'US':
                 /* falls through */
                 default:

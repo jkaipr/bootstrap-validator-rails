@@ -1,4 +1,8 @@
 (function($) {
+    /**
+     * Vietnamese language package
+     * Translated by @nghuuphuoc
+     */
     $.fn.bootstrapValidator.i18n = $.extend(true, $.fn.bootstrapValidator.i18n, {
         base64: {
             'default': 'Vui lòng nhập chuỗi mã hoá base64 hợp lệ'
@@ -180,6 +184,9 @@
         imei: {
             'default': 'Vui lòng nhập số IMEI hợp lệ'
         },
+        imo: {
+            'default': 'Vui lòng nhập số IMO hợp lệ'
+        },
         integer: {
             'default': 'Vui lòng nhập số hợp lệ'
         },
@@ -207,6 +214,9 @@
         mac: {
             'default': 'Vui lòng nhập địa chỉ MAC hợp lệ'
         },
+        meid: {
+            'default': 'Vui lòng nhập số MEID hợp lệ'
+        },
         notEmpty: {
             'default': 'Vui lòng nhập giá trị'
         },
@@ -218,7 +228,12 @@
             countryNotSupported: 'Mã quốc gia %s không được hỗ trợ',
             country: 'Vui lòng nhập số điện thoại hợp lệ của %s',
             countries: {
+                BR: 'Brazil',
+                ES: 'Tây Ban Nha',
+                FR: 'Pháp',
                 GB: 'Vương quốc Anh',
+                MA: 'Maroc',
+                PK: 'Pakistan',
                 US: 'Mỹ'
             }
         },
@@ -268,6 +283,7 @@
                 AT: 'Áo',
                 BE: 'Bỉ',
                 BG: 'Bulgari',
+                BR: 'Brazil',
                 CH: 'Thuỵ Sĩ',
                 CY: 'Síp',
                 CZ: 'Séc',
@@ -283,6 +299,7 @@
                 HU: 'Hungari',
                 HR: 'Croatia',
                 IE: 'Ireland',
+                IS: 'Iceland',
                 IT: 'Ý',
                 LT: 'Lithuania',
                 LU: 'Luxembourg',
@@ -297,7 +314,8 @@
                 RS: 'Serbi',
                 SE: 'Thuỵ Điển',
                 SI: 'Slovenia',
-                SK: 'Slovakia'
+                SK: 'Slovakia',
+                ZA: 'Nam Phi'
             }
         },
         vin: {
@@ -308,14 +326,16 @@
             countryNotSupported: 'Mã quốc gia %s không được hỗ trợ',
             country: 'Vui lòng nhập %s',
             countries: {
-                'CA': 'mã bưu điện của Canada',
-                'DK': 'mã bưu điện của Đan Mạch',
-                'GB': 'mã bưu điện của Vương quốc Anh',
-                'IT': 'mã bưu điện của Ý',
-                'NL': 'mã bưu điện của Hà Lan',
-                'SE': 'mã bưu điện của Thuỵ Sĩ',
-                'SG': 'mã bưu điện của Singapore',
-                'US': 'mã bưu điện của Mỹ'
+                BR: 'mã bưu điện của Brazil',
+                CA: 'mã bưu điện của Canada',
+                DK: 'mã bưu điện của Đan Mạch',
+                GB: 'mã bưu điện của Vương quốc Anh',
+                IT: 'mã bưu điện của Ý',
+                MA: 'mã bưu điện của Maroc',
+                NL: 'mã bưu điện của Hà Lan',
+                SE: 'mã bưu điện của Thuỵ Sĩ',
+                SG: 'mã bưu điện của Singapore',
+                US: 'mã bưu điện của Mỹ'
             }
         }
     });

@@ -184,6 +184,9 @@
         imei: {
             'default': 'Kérlek, hogy érvényes IMEI számot adj meg'
         },
+        imo: {
+            'default': 'Kérlek, hogy érvényes IMO számot adj meg'
+        },
         integer: {
             'default': 'Kérlek, hogy számot adj meg'
         },
@@ -211,6 +214,9 @@
         mac: {
             'default': 'Kérlek, hogy érvényes MAC címet ajd meg'
         },
+        meid: {
+            'default': 'Kérlek, hogy érvényes MEID számot ajd meg'
+        },
         notEmpty: {
             'default': 'Kérlek, hogy adj értéket a mezőnek'
         },
@@ -222,7 +228,12 @@
             countryNotSupported: 'A(z) %s országkód nem támogatott',
             country: 'Kérlek, hogy érvényes %s telefonszámot adj meg',
             countries: {
+                BR: 'brazil',
+                ES: 'spanyol',
+                FR: 'francia',
                 GB: 'Egyesült Királyság beli',
+                MA: 'Marokkó',
+                PK: 'Pakisztán',
                 US: 'Egyesült Államok beli'
             }
         },
@@ -272,6 +283,7 @@
                 AT: 'osztrák',
                 BE: 'belga',
                 BG: 'bulgár',
+                BR: 'brazil',
                 CH: 'svájci',
                 CY: 'ciprusi',
                 CZ: 'cseh',
@@ -287,6 +299,7 @@
                 HU: 'magyar',
                 HR: 'horvát',
                 IE: 'ír',
+                IS: 'izlandi',
                 IT: 'olasz',
                 LT: 'litván',
                 LU: 'luxemburgi',
@@ -301,7 +314,8 @@
                 RS: 'szerb',
                 SE: 'svéd',
                 SI: 'szlovén',
-                SK: 'szlovák'
+                SK: 'szlovák',
+                ZA: 'dél afrikai'
             }
         },
         vin: {
@@ -312,14 +326,16 @@
             countryNotSupported: '%s - nem támogatott ország',
             country: 'Kérlek, hogy helyes %s irányítószámot adj meg',
             countries: {
-                'CA': 'kanadai',
-                'DK': 'dán',
-                'GB': 'Egyesült Királyság beli',
-                'IT': 'olasz',
-                'NL': 'holland',
-                'SE': 'svájci',
-                'SG': 'singaporei',
-                'US': 'Egyesült Államok beli'
+                BR: 'brazil',
+                CA: 'kanadai',
+                DK: 'dán',
+                GB: 'Egyesült Királyság beli',
+                IT: 'olasz',
+                MA: 'Marokkó',
+                NL: 'holland',
+                SE: 'svájci',
+                SG: 'singaporei',
+                US: 'Egyesült Államok beli'
             }
         }
     });
