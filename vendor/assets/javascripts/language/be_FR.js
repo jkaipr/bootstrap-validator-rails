@@ -1,7 +1,7 @@
 (function($) {
     /**
-     * French language package
-     * Translated by @dlucazeau
+     * Belgium (French) language package
+     * Translated by @neilime
      */
     $.fn.bootstrapValidator.i18n = $.extend(true, $.fn.bootstrapValidator.i18n, {
         base64: {
@@ -85,7 +85,7 @@
                 CR: 'Costa Rica',
                 CV: 'Cap Vert',
                 CY: 'Chypre',
-                CZ: 'République Tchèque',
+                CZ: 'Tchèque',
                 DE: 'Allemagne',
                 DK: 'Danemark',
                 DO: 'République Dominicaine',
@@ -157,7 +157,7 @@
                 CH: 'Suisse',
                 CL: 'Chili',
                 CN: 'Chine',
-                CZ: 'République Tchèque',
+                CZ: 'Tchèque',
                 DK: 'Danemark',
                 EE: 'Estonie',
                 ES: 'Espagne',
@@ -232,7 +232,7 @@
             countries: {
                 BR: 'Brésil',
                 CN: 'Chine',
-                CZ: 'République Tchèque',
+                CZ: 'Tchèque',
                 DK: 'Danemark',
                 ES: 'Espagne',
                 FR: 'France',
@@ -296,7 +296,7 @@
                 BR: 'Brésil',
                 CH: 'Suisse',
                 CY: 'Chypre',
-                CZ: 'République Tchèque',
+                CZ: 'Tchèque',
                 DE: 'Allemagne',
                 DK: 'Danemark',
                 EE: 'Estonie',
@@ -339,7 +339,7 @@
             countries: {
                 BR: 'Brésil',
                 CA: 'Canada',
-                CZ: 'République Tchèque',
+                CZ: 'Tchèque',
                 DK: 'Danemark',
                 GB: 'Royaume-Uni',
                 IT: 'Italie',
