@@ -20,6 +20,9 @@
             more: 'Te rog alege maxim %s optiuni',
             between: 'Te rog alege %s - %s optiuni'
         },
+        color: {
+            'default': 'Te rog sa introduci o culoare valida'
+        },
         creditCard: {
             'default': 'Te rog introdu un numar de card valid'
         },
@@ -30,7 +33,10 @@
             'default': 'Te rog introdu un numar CVV valid'
         },
         date: {
-            'default': 'Te rog introdu o data valida'
+            'default': 'Te rog introdu o data valida',
+            min: 'Te rog sa introduci o data dupa %s',
+            max: 'Te rog sa introduci o data inainte de %s',
+            range: 'Te rog sa introduci o data in intervalul %s - %s'
         },
         different: {
             'default': 'Te rog sa introduci o valoare diferita'
@@ -88,7 +94,7 @@
                 CZ: 'Republica Cehia',
                 DE: 'Germania',
                 DK: 'Danemarca',
-                DO: 'Dominica',
+                DO: 'Republica Dominicană',
                 DZ: 'Algeria',
                 EE: 'Estonia',
                 ES: 'Spania',
@@ -233,6 +239,7 @@
                 BR: 'Brazilia',
                 CN: 'China',
                 CZ: 'Republica Cehia',
+                DE: 'Germania',
                 DK: 'Danemarca',
                 ES: 'Spania',
                 FR: 'Franta',
@@ -337,14 +344,20 @@
             countryNotSupported: 'Tara %s nu este acceptata',
             country: 'Te rog sa introduci un cod postal valid din %s',
             countries: {
+                AT: 'Austria',
                 BR: 'Brazilia',
                 CA: 'Canada',
+                CH: 'Elvetia',
                 CZ: 'Republica Cehia',
+                DE: 'Germania',
                 DK: 'Danemarca',
+                FR: 'Franta',
                 GB: 'Regatul Unit',
+                IE: 'Irlanda',
                 IT: 'Italia',
                 MA: 'Maroc',
                 NL: 'Olanda',
+                PT: 'Portugalia',
                 RO: 'Romania',
                 RU: 'Rusia',
                 SE: 'Suedia',

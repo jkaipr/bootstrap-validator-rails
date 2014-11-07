@@ -1,4 +1,4 @@
-bootstrap-validator-rails (0.5.2)
+bootstrap-validator-rails (0.5.3)
 =================================
 
 Gem version of bootstrapvalidator JavaScript library = a jQuery based field validator for Twitter Bootstrap 3.

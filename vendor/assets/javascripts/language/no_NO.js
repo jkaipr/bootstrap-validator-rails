@@ -20,6 +20,9 @@
             more: 'Vennligst velg maks %s valgmuligheter',
             between: 'Vennligst velg %s - %s valgmuligheter'
         },
+        color: {
+            'default': 'Vennligst fyll ut dette feltet med en gyldig'
+        },
         creditCard: {
             'default': 'Vennligst fyll ut dette feltet med et gyldig kreditkortnummer'
         },
@@ -30,7 +33,10 @@
             'default': 'Vennligst fyll ut dette feltet med et gyldig CVV-nummer'
         },
         date: {
-            'default': 'Vennligst fyll ut dette feltet med en gyldig dato'
+            'default': 'Vennligst fyll ut dette feltet med en gyldig dato',
+            min: 'Vennligst fyll ut dette feltet med en gyldig dato etter %s',
+            max: 'Vennligst fyll ut dette feltet med en gyldig dato før %s',
+            range: 'Vennligst fyll ut dette feltet med en gyldig dato mellom %s - %s'
         },
         different: {
             'default': 'Vennligst fyll ut dette feltet med en annen verdi'
@@ -233,6 +239,7 @@
                 BR: 'Brasil',
                 CN: 'Kina',
                 CZ: 'Tsjekkia',
+                DE: 'Tyskland',
                 DK: 'Danmark',
                 ES: 'Spania',
                 FR: 'Frankrike',
@@ -337,14 +344,20 @@
             countryNotSupported: 'Landskoden %s støttes desverre ikke',
             country: 'Vennligst fyll ut dette feltet med et gyldig postnummer i %s',
             countries: {
+                AT: 'Østerrike',
                 BR: 'Brasil',
                 CA: 'Canada',
+                CH: 'Schweiz',
                 CZ: 'Tsjekkia',
+                DE: 'Tyskland',
                 DK: 'Danmark',
+                FR: 'Frankrike',
                 GB: 'Storbritannia',
+                IE: 'Irland',
                 IT: 'Italia',
                 MA: 'Marokko',
                 NL: 'Nederland',
+                PT: 'Portugal',
                 RO: 'Romania',
                 RU: 'Russland',
                 SE: 'Sverige',

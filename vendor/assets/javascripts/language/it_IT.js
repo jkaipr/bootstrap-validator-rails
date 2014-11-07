@@ -5,7 +5,7 @@
      */
     $.fn.bootstrapValidator.i18n = $.extend(true, $.fn.bootstrapValidator.i18n, {
         base64: {
-            'default': 'Please enter a valid base 64 encoded'
+            'default': 'Si prega di inserire un valore codificato in Base 64'
         },
         between: {
             'default': 'Si prega di inserire un valore tra %s e %s',
@@ -20,6 +20,9 @@
             more: 'Si prega di scegliere al massimo l\'opzione %s',
             between: 'Si prega di scegliere l\'opzione tra %s e %s'
         },
+        color: {
+            'default': 'Si prega di inserire un colore valido'
+        },
         creditCard: {
             'default': 'Si prega di inserire un numero di carta di credito valido'
         },
@@ -30,7 +33,10 @@
             'default': 'Si prega di inserire un numero CVV valido'
         },
         date: {
-            'default': 'Si prega di inserire una data valida'
+            'default': 'Si prega di inserire una data valida',
+            min: 'Si prega di inserire una data successiva al %s',
+            max: 'Si prega di inserire una data antecedente il %s',
+            range: 'Si prega di inserire una data compresa tra %s - %s'
         },
         different: {
             'default': 'Si prega di inserire un valore differente'
@@ -233,6 +239,7 @@
                 BR: 'Brasile',
                 CN: 'Cina',
                 CZ: 'Republica Ceca',
+                DE: 'Germania',
                 DK: 'Danimarca',
                 ES: 'Spagna',
                 FR: 'Francia',
@@ -337,14 +344,20 @@
             countryNotSupported: 'Il codice nazione %s non e supportato',
             country: 'Si prega di inserire un codice postale valido per %s',
             countries: {
+                AT: 'Austria',
                 BR: 'Brasile',
                 CA: 'Canada',
+                CH: 'Svizzera',
                 CZ: 'Republica Ceca',
+                DE: 'Germania',
                 DK: 'Danimarca',
+                FR: 'Francia',
                 GB: 'Regno Unito',
+                IE: 'Irlanda',
                 IT: 'Italia',
                 MA: 'Marocco',
                 NL: 'Paesi Bassi',
+                PT: 'Portogallo',
                 RO: 'Romania',
                 RU: 'Russia',
                 SE: 'Svezia',

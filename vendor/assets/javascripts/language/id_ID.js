@@ -20,6 +20,9 @@
             more: 'Silahkan pilih pilihan %s pada maksimum',
             between: 'Silahkan pilih pilihan %s - %s'
         },
+        color: {
+            'default': 'Silahkan isi karakter warna yang valid'
+        },
         creditCard: {
             'default': 'Silahkan isi nomor kartu kredit yang valid'
         },
@@ -30,7 +33,10 @@
             'default': 'Silahkan isi nomor CVV yang valid'
         },
         date: {
-            'default': 'Silahkan isi tanggal yang benar'
+            'default': 'Silahkan isi tanggal yang benar',
+            min: 'Silahkan isi tanggal setelah tanggal %s',
+            max: 'Silahkan isi tanggal sebelum tanggal %s',
+            range: 'Silahkan isi tanggal antara %s - %s'
         },
         different: {
             'default': 'Silahkan isi nilai yang berbeda'
@@ -88,7 +94,7 @@
                 CZ: 'Czech',
                 DE: 'Jerman',
                 DK: 'Denmark',
-                DO: 'Dominika',
+                DO: 'Republik Dominika',
                 DZ: 'Algeria',
                 EE: 'Estonia',
                 ES: 'Spanyol',
@@ -233,6 +239,7 @@
                 BR: 'Brazil',
                 CN: 'Cina',
                 CZ: 'Czech',
+                DE: 'Jerman',
                 DK: 'Denmark',
                 ES: 'Spanyol',
                 FR: 'Francis',
@@ -337,14 +344,20 @@
             countryNotSupported: 'Kode negara %s belum didukung',
             country: 'Silahkan isi kode pos yang valid di %s',
             countries: {
+                AT: 'Austria',
                 BR: 'Brazil',
                 CA: 'Kanada',
+                CH: 'Switzerland',
                 CZ: 'Czech',
+                DE: 'Jerman',
                 DK: 'Denmark',
+                FR: 'Francis',
                 GB: 'Inggris',
+                IE: 'Irlandia',
                 IT: 'Italia',
                 MA: 'Maroko',
                 NL: 'Belanda',
+                PT: 'Portugal',
                 RO: 'Romania',
                 RU: 'Russia',
                 SE: 'Sweden',

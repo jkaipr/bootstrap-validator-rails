@@ -20,6 +20,9 @@
             more: 'Vui lòng chọn nhiều nhất %s lựa chọn',
             between: 'Vui lòng chọn %s - %s lựa chọn'
         },
+        color: {
+            'default': 'Vui lòng nhập mã màu hợp lệ'
+        },
         creditCard: {
             'default': 'Vui lòng nhập số thẻ tín dụng hợp lệ'
         },
@@ -30,7 +33,10 @@
             'default': 'Vui lòng nhập số CVV hợp lệ'
         },
         date: {
-            'default': 'Vui lòng nhập ngày hợp lệ'
+            'default': 'Vui lòng nhập ngày hợp lệ',
+            min: 'Vui lòng nhập ngày sau %s',
+            max: 'Vui lòng nhập ngày trước %s',
+            range: 'Vui lòng nhập ngày trong khoảng %s - %s'
         },
         different: {
             'default': 'Vui lòng nhập một giá trị khác'
@@ -233,6 +239,7 @@
                 BR: 'Brazil',
                 CN: 'Trung Quốc',
                 CZ: 'Séc',
+                DE: 'Đức',
                 DK: 'Đan Mạch',
                 ES: 'Tây Ban Nha',
                 FR: 'Pháp',
@@ -337,14 +344,20 @@
             countryNotSupported: 'Mã quốc gia %s không được hỗ trợ',
             country: 'Vui lòng nhập mã bưu điện hợp lệ của %s',
             countries: {
+                AT: 'Áo',
                 BR: 'Brazil',
                 CA: 'Canada',
+                CH: 'Thuỵ Sĩ',
                 CZ: 'Séc',
+                DE: 'Đức',
                 DK: 'Đan Mạch',
+                FR: 'Pháp',
                 GB: 'Vương quốc Anh',
+                IE: 'Ireland',
                 IT: 'Ý',
                 MA: 'Maroc',
                 NL: 'Hà Lan',
+                PT: 'Bồ Đào Nha',
                 RO: 'Romania',
                 RU: 'Nga',
                 SE: 'Thuỵ Sĩ',
